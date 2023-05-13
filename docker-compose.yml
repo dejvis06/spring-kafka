@@ -3,7 +3,6 @@ version: '2.1'
 services:
   kafka:
     image: wurstmeister/kafka:2.12-2.5.0
-    mem_limit: 512m
     ports:
       - "9092:9092"
     environment:
@@ -13,8 +12,19 @@ services:
       - zookeeper
   zookeeper:
     image: wurstmeister/zookeeper:3.4.6
-    mem_limit: 512m
     ports:
       - "2181:2181"
     environment:
       - KAFKA_ADVERTISED_HOST_NAME=zookeeper
+
+  producer:
+    build: spring-kafka/producer
+    depends_on:
+      kafka:
+        condition: service_started
+
+  consumer:
+    build: spring-kafka/consumer
+    depends_on:
+      kafka:
+        condition: service_started
