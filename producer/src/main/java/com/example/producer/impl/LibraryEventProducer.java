@@ -1,6 +1,7 @@
-package com.example.producer;
+package com.example.producer.impl;
 
 import com.example.domain.LibraryEvent;
+import com.example.producer.Producer;
 import com.example.producer.callback.LibraryEventCallBack;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-public class LibraryEventProducer {
+public class LibraryEventProducer implements Producer<LibraryEvent> {
 
     private final KafkaTemplate<Integer, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
@@ -22,8 +23,8 @@ public class LibraryEventProducer {
         this.objectMapper = objectMapper;
     }
 
-    public void sendLibraryEvent(LibraryEvent libraryEvent) throws JsonProcessingException {
-
+    @Override
+    public void produce(LibraryEvent libraryEvent) throws JsonProcessingException {
         Integer key = libraryEvent.getLibraryEventId();
         String value = objectMapper.writeValueAsString(libraryEvent);
 
