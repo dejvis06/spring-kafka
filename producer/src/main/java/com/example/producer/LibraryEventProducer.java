@@ -1,6 +1,7 @@
 package com.example.producer;
 
 import com.example.domain.LibraryEvent;
+import com.example.producer.callback.LibraryEventCallBack;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ public class LibraryEventProducer {
         Integer key = libraryEvent.getLibraryEventId();
         String value = objectMapper.writeValueAsString(libraryEvent);
 
-        kafkaTemplate.sendDefault(key, value);
+        kafkaTemplate.sendDefault(key, value)
+                .addCallback(new LibraryEventCallBack());
     }
 }
