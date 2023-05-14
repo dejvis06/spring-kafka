@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 @RestController
 public class LibraryEventsController {
 
@@ -20,7 +22,7 @@ public class LibraryEventsController {
     }
 
     @PostMapping("/v1/libraryevent")
-    public ResponseEntity<LibraryEvent> postLibraryEvent(@RequestBody LibraryEvent libraryEvent) throws Exception {
+    public ResponseEntity<LibraryEvent> postLibraryEvent(@RequestBody @Valid LibraryEvent libraryEvent) throws Exception {
 
         libraryEventProducer.produce(libraryEvent);
         return ResponseEntity.status(HttpStatus.CREATED).body(libraryEvent);
