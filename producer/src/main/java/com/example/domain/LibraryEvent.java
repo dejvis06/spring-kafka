@@ -14,6 +14,7 @@ import javax.validation.constraints.NotNull;
 @Builder
 public class LibraryEvent {
 
+    @NotNull
     private Integer libraryEventId;
 
     @NotNull
