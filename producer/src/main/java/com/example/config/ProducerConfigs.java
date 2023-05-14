@@ -8,14 +8,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.KafkaAdmin;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
 public class ProducerConfigs {
 
-    @Value("spring.kafka.bootstrap-servers")
-    String[] bootstrapServers;
+    @Value("${spring.kafka.bootstrap-servers}")
+    String bootstrapServers;
 
     @Bean
     public KafkaAdmin admin() {
