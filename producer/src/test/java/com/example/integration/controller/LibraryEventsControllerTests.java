@@ -1,4 +1,4 @@
-package com.example.controller;
+package com.example.integration.controller;
 
 import com.example.domain.Book;
 import com.example.domain.LibraryEvent;
