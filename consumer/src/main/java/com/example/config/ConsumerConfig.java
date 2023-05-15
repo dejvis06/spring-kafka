@@ -1,5 +1,6 @@
 package com.example.config;
 
+import com.example.consumer.listener.LibraryEventListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
@@ -21,6 +22,8 @@ public class ConsumerConfig {
     }
 
     private DefaultErrorHandler errorHandler() {
-        return new DefaultErrorHandler(new FixedBackOff(1000L, 2L));
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler(new FixedBackOff(1000L, 2L));
+        errorHandler.setRetryListeners(new LibraryEventListener());
+        return errorHandler;
     }
 }
