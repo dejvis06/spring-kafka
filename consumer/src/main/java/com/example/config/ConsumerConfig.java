@@ -7,6 +7,7 @@ import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.kafka.support.ExponentialBackOffWithMaxRetries;
 import org.springframework.util.backoff.FixedBackOff;
 
 @Configuration
@@ -22,7 +23,13 @@ public class ConsumerConfig {
     }
 
     private DefaultErrorHandler errorHandler() {
-        DefaultErrorHandler errorHandler = new DefaultErrorHandler(new FixedBackOff(1000L, 2L));
+
+        ExponentialBackOffWithMaxRetries exponentialBackOffWithMaxRetries = new ExponentialBackOffWithMaxRetries(2);
+        exponentialBackOffWithMaxRetries.setInitialInterval(1_000L);
+        exponentialBackOffWithMaxRetries.setMultiplier(2.0);
+        exponentialBackOffWithMaxRetries.setMaxInterval(2_000L);
+
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler(exponentialBackOffWithMaxRetries);
         errorHandler.setRetryListeners(new LibraryEventListener());
         errorHandler.addNotRetryableExceptions(Exception.class, IllegalArgumentException.class);
         return errorHandler;
