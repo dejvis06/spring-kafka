@@ -20,7 +20,7 @@ public class ConsumerConfig {
         ConcurrentKafkaListenerContainerFactory<Object, Object> factory = new ConcurrentKafkaListenerContainerFactory();
         configurer.configure(factory, kafkaConsumerFactory.getIfAvailable());
 
-        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL); // offset management
+        // factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL); // offset management
         return factory;
     }
 }
