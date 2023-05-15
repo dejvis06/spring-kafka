@@ -24,6 +24,7 @@ public class ConsumerConfig {
     private DefaultErrorHandler errorHandler() {
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(new FixedBackOff(1000L, 2L));
         errorHandler.setRetryListeners(new LibraryEventListener());
+        errorHandler.addNotRetryableExceptions(Exception.class, IllegalArgumentException.class);
         return errorHandler;
     }
 }
