@@ -1,6 +1,5 @@
 package com.example.config;
 
-import com.example.common.exceptions.RetryableException;
 import com.example.consumer.listener.LibraryEventListener;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.TopicPartition;
