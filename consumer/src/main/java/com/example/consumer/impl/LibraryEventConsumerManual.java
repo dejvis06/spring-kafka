@@ -12,7 +12,10 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class LibraryEventConsumerManual implements Consumer<Integer, String>, AcknowledgingMessageListener<Integer, String> {
 
-    @KafkaListener(topics = {"library-events"})
+    public static final String LIBRARY_EVENTS_RETRY = "library-events.RETRY";
+    public static final String LIBRARY_EVENTS = "library-events";
+
+    @KafkaListener(topics = {LIBRARY_EVENTS})
     @Override
     public void onMessage(ConsumerRecord<Integer, String> consumerRecord, Acknowledgment acknowledgment) {
         consume(consumerRecord);
@@ -22,5 +25,11 @@ public class LibraryEventConsumerManual implements Consumer<Integer, String>, Ac
     @Override
     public void consume(ConsumerRecord<Integer, String> consumerRecord) {
         log.info("Consumer Record: {}", consumerRecord);
+    }
+
+    @KafkaListener(topics = {LIBRARY_EVENTS_RETRY})
+    @Override
+    public void retry(ConsumerRecord<Integer, String> consumerRecord) {
+        log.info("Retry Consumer Record: {}", consumerRecord);
     }
 }

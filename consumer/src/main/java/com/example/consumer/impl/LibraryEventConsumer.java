@@ -16,8 +16,10 @@ public class LibraryEventConsumer implements Consumer<Integer, String> {
 
     public static final String LIBRARY_EVENT_ID_CANNOT_BE_NULL = "Library Event ID cannot be null!";
     public static final String LIBRARY_EVENT_ID_0 = "Library Event ID = 0";
+    public static final String LIBRARY_EVENTS_RETRY = "library-events.RETRY";
+    public static final String LIBRARY_EVENTS = "library-events";
 
-    @KafkaListener(topics = {"library-events"})
+    @KafkaListener(topics = {LIBRARY_EVENTS})
     @Override
     public void consume(ConsumerRecord<Integer, String> consumerRecord) throws JsonProcessingException, MyRetriableException {
 
@@ -27,5 +29,11 @@ public class LibraryEventConsumer implements Consumer<Integer, String> {
         else if (libraryEvent.getLibraryEventId() == 0)
             throw new MyRetriableException(LIBRARY_EVENT_ID_0);
         log.info("Consumer Record: {}", consumerRecord);
+    }
+
+    @KafkaListener(topics = {LIBRARY_EVENTS_RETRY})
+    @Override
+    public void retry(ConsumerRecord<Integer, String> consumerRecord) {
+        log.info("Retrying Consumer Record: {}", consumerRecord);
     }
 }
