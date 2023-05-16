@@ -33,7 +33,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@EmbeddedKafka(topics = {"library-events"}, partitions = 1)
+@EmbeddedKafka(topics = {"library-events", "library-events.RETRY", "library-events.DLT"}, partitions = 1)
 @TestPropertySource(properties = {"spring.kafka.consumer.bootstrap-servers=${spring.embedded.kafka.brokers}",
         "spring.kafka.producer.bootstrap-servers=${spring.embedded.kafka.brokers}"})
 public class LibraryEventsConsumerIntegrationTest {
@@ -79,7 +79,7 @@ public class LibraryEventsConsumerIntegrationTest {
         CountDownLatch countDownLatch = new CountDownLatch(1);
         countDownLatch.await(3, TimeUnit.SECONDS);
 
-        verify(libraryEventConsumerSpy, times(1)).consume(isA(ConsumerRecord.class));
+        verify(libraryEventConsumerSpy, times(2)).consume(isA(ConsumerRecord.class));
 
         buildRetryableTopicConsumer();
 
@@ -88,8 +88,8 @@ public class LibraryEventsConsumerIntegrationTest {
     }
 
     private void buildRetryableTopicConsumer() {
-        Map<String, Object> configs = new HashMap<>(KafkaTestUtils.consumerProps("group1", "true", embeddedKafkaBroker));
+        Map<String, Object> configs = new HashMap<>(KafkaTestUtils.consumerProps("group", "true", embeddedKafkaBroker));
         consumer = new DefaultKafkaConsumerFactory<>(configs, new IntegerDeserializer(), new StringDeserializer()).createConsumer();
-        embeddedKafkaBroker.consumeFromAllEmbeddedTopics(consumer);
+        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(consumer, LIBRARY_EVENTS_RETRY);
     }
 }

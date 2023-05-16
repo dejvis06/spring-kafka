@@ -7,7 +7,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.common.errors.RetriableException;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +15,7 @@ import org.springframework.stereotype.Component;
 public class LibraryEventConsumer implements Consumer<Integer, String> {
 
     public static final String LIBRARY_EVENT_ID_CANNOT_BE_NULL = "Library Event ID cannot be null!";
+    public static final String LIBRARY_EVENT_ID_0 = "Library Event ID = 0";
 
     @KafkaListener(topics = {"library-events"})
     @Override
@@ -25,7 +25,7 @@ public class LibraryEventConsumer implements Consumer<Integer, String> {
         if (libraryEvent.getLibraryEventId() == null)
             throw new IllegalArgumentException(LIBRARY_EVENT_ID_CANNOT_BE_NULL);
         else if (libraryEvent.getLibraryEventId() == 0)
-            throw new MyRetriableException();
+            throw new MyRetriableException(LIBRARY_EVENT_ID_0);
         log.info("Consumer Record: {}", consumerRecord);
     }
 }

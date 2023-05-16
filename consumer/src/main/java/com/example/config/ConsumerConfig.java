@@ -1,5 +1,6 @@
 package com.example.config;
 
+import com.example.common.exceptions.MyRetriableException;
 import com.example.consumer.listener.LibraryEventListener;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.TopicPartition;
@@ -7,6 +8,7 @@ import org.apache.kafka.common.errors.RetriableException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.dao.RecoverableDataAccessException;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
@@ -49,10 +51,10 @@ public class ConsumerConfig {
     DeadLetterPublishingRecoverer deadLetterPublishingRecoverer() {
         DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(kafkaTemplate,
                 (r, e) -> {
-                    if (e instanceof RetriableException) {
-                        return new TopicPartition(r.topic() + LIBRARY_EVENTS_RETRY, r.partition());
+                    if (e.getCause() instanceof MyRetriableException) {
+                        return new TopicPartition(LIBRARY_EVENTS_RETRY, r.partition());
                     } else {
-                        return new TopicPartition(r.topic() + LIBRARY_EVENTS_DLT, r.partition());
+                        return new TopicPartition(LIBRARY_EVENTS_DLT, r.partition());
                     }
                 });
         return recoverer;
