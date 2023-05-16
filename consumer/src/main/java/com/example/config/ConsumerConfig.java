@@ -4,6 +4,7 @@ import com.example.common.exceptions.RetryableException;
 import com.example.consumer.listener.LibraryEventListener;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.errors.RetriableException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,14 +43,14 @@ public class ConsumerConfig {
 
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(deadLetterPublishingRecoverer(), exponentialBackOffWithMaxRetries);
         errorHandler.setRetryListeners(new LibraryEventListener());
-        errorHandler.addNotRetryableExceptions(IllegalArgumentException.class);
+        errorHandler.addNotRetryableExceptions(IllegalArgumentException.class, RetriableException.class);
         return errorHandler;
     }
 
     DeadLetterPublishingRecoverer deadLetterPublishingRecoverer() {
         DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(kafkaTemplate,
                 (r, e) -> {
-                    if (e instanceof RetryableException) {
+                    if (e instanceof RetriableException) {
                         return new TopicPartition(r.topic() + LIBRARY_EVENTS_RETRY, r.partition());
                     } else {
                         return new TopicPartition(r.topic() + LIBRARY_EVENTS_DLT, r.partition());
