@@ -1,7 +1,6 @@
 package com.example.integration.controller;
 
 import com.example.common.exceptions.MyRetriableException;
-import com.example.common.exceptions.RetryableException;
 import com.example.consumer.impl.LibraryEventConsumer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -64,7 +63,7 @@ public class LibraryEventsConsumerIntegrationTest {
     }
 
     @Test
-    void testConsume() throws ExecutionException, InterruptedException, JsonProcessingException, RetryableException {
+    void testConsume() throws ExecutionException, InterruptedException, JsonProcessingException, MyRetriableException {
         String json = "{ \"libraryEventId\": 1, \"book\": { \"bookId\": 0, \"bookName\": \"string\", \"bookAuthor\": \"string\" } }";
         kafkaTemplate.send("library-events", json).get();
 
