@@ -31,7 +31,7 @@ public class ConsumerConfig {
 
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(exponentialBackOffWithMaxRetries);
         errorHandler.setRetryListeners(new LibraryEventListener());
-        errorHandler.addNotRetryableExceptions(Exception.class, IllegalArgumentException.class);
+        errorHandler.addNotRetryableExceptions(IllegalArgumentException.class);
         return errorHandler;
     }
 }
