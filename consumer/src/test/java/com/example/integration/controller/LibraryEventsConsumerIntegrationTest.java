@@ -81,15 +81,31 @@ public class LibraryEventsConsumerIntegrationTest {
 
         verify(libraryEventConsumerSpy, times(2)).consume(isA(ConsumerRecord.class));
 
-        buildRetryableTopicConsumer();
+        buildConsumer("group", LIBRARY_EVENTS_RETRY);
 
         ConsumerRecord<Integer, String> consumerRecord = KafkaTestUtils.getSingleRecord(consumer, LIBRARY_EVENTS_RETRY);
         assertEquals(json, consumerRecord.value());
     }
 
-    private void buildRetryableTopicConsumer() {
-        Map<String, Object> configs = new HashMap<>(KafkaTestUtils.consumerProps("group", "true", embeddedKafkaBroker));
+    @Test
+    void testDeadletterTopic() throws ExecutionException, InterruptedException, JsonProcessingException, MyRetriableException {
+        String json = "{ \"libraryEventId\": null, \"book\": { \"bookId\": 0, \"bookName\": \"string\", \"bookAuthor\": \"string\" } }";
+        kafkaTemplate.send("library-events", json).get();
+
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        countDownLatch.await(3, TimeUnit.SECONDS);
+
+        buildConsumer("group1", LIBRARY_EVENTS_DLT);
+
+        verify(libraryEventConsumerSpy, times(1)).consume(isA(ConsumerRecord.class));
+
+        ConsumerRecord<Integer, String> consumerRecord = KafkaTestUtils.getSingleRecord(consumer, LIBRARY_EVENTS_DLT);
+        assertEquals(json, consumerRecord.value());
+    }
+
+    private void buildConsumer(String group, String topic) {
+        Map<String, Object> configs = new HashMap<>(KafkaTestUtils.consumerProps(group, "true", embeddedKafkaBroker));
         consumer = new DefaultKafkaConsumerFactory<>(configs, new IntegerDeserializer(), new StringDeserializer()).createConsumer();
-        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(consumer, LIBRARY_EVENTS_RETRY);
+        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(consumer, topic);
     }
 }
