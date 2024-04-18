@@ -24,6 +24,4 @@ Both applications share a common domain context with two primary entities:
 
 ## Setup and Configuration
 
-Each application contains Dockerfiles and Kubernetes configurations for easy deployment. Maven is used for dependency management, with wrapper scripts included for both Unix and Windows environments.
-
-For detailed setup and running instructions, refer to individual READMEs within the `consumer/` and `producer/` directories.
+Check the docker-compose file in the root project and start from there to build & run
