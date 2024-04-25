@@ -1,14 +1,70 @@
+# Table of Contents
+
+- [Spring Kafka Project](#spring-kafka-project)
+   - [Introduction](#introduction)
+- [Consumer Application](#consumer-application)
+   - [Consumer Configuration Overview](#consumer-configuration-overview)
+      - [Listening to Kafka Topics](#listening-to-kafka-topics)
+      - [Consumer Factory Configurations](#consumer-factory-configurations)
+      - [ConcurrentKafkaListenerContainerFactory](#concurrentkafkalistenercontainerfactory)
+- [Producer Application](#producer-application)
+   - [Overview](#overview)
+   - [Key Components](#key-components)
+      - [LibraryEventProducer](#libraryeventproducer)
+      - [Producer Interface](#producer-interface)
+- [Domain](#domain)
+   - [LibraryEvent](#libraryevent)
+   - [Book](#book)
+- [Setup and Configuration](#setup-and-configuration)
+   - [Docker Compose](#docker-compose)
+
+
 # Spring Kafka Project
 
-This project demonstrates an implementation of Apache Kafka with Spring Boot, structured into two main applications: Consumer and Producer.
+This project is a demo for learning about Spring for Apache Kafka.
 
-## Applications
+## Consumer
+Located under `consumer/`, this service is a Spring Boot application that listens to Kafka topics and processes incoming messages.
 
-### Consumer Application
+### Consumer Configuration Overview
 
-Located under `consumer/`, the Consumer Application is a Spring Boot application that listens to Kafka topics and processes incoming messages. Key components include:
-- **LibraryEventConsumer**: Processes library events from Kafka. It handles retryable conditions and logs appropriate messages based on the event status.
-- **LibraryEventListener**: Manages retries for failed Kafka message deliveries, providing detailed logs on failures and recoveries.
+The `ConsumerConfig` class is a `@Configuration` bean, annotated also with `@EnableKafka`. The `@EnableKafka` enables spring's application context to register
+the consumers annotated with the `@KafkaListener` annotation:
+```java
+   public static final String LIBRARY_EVENTS = "library-events";
+
+   @KafkaListener(topics = {LIBRARY_EVENTS})
+   @Override
+   public void consume(ConsumerRecord<Integer, String> consumerRecord) throws JsonProcessingException, MyRetriableException {
+
+      LibraryEvent libraryEvent = new ObjectMapper().readValue(consumerRecord.value(), LibraryEvent.class);
+      if (libraryEvent.getLibraryEventId() == null)
+         throw new IllegalArgumentException(LIBRARY_EVENT_ID_CANNOT_BE_NULL);
+      else if (libraryEvent.getLibraryEventId() == 0)
+         throw new MyRetriableException(LIBRARY_EVENT_ID_0);
+      log.info("Consumer Record: {}", consumerRecord);
+   }
+```
+
+#### Consumer Factory Configurations
+The following configurations are specified in the `application.properties` file.
+
+- **Bootstrap Servers**: `kafka:29092` - The Kafka broker addresses.
+- **Key Deserializer**: `org.apache.kafka.common.serialization.IntegerDeserializer` - Deserializer for the key that is used when consuming messages.
+- **Value Deserializer**: `org.apache.kafka.common.serialization.StringDeserializer` - Deserializer for the value that is used when consuming messages.
+- **Group ID**: `library-events-listener-group`
+
+This method defines a `ConcurrentKafkaListenerContainerFactory` bean that configures the Kafka listener containers and allows the creation of multiple concurrent consumer threads for each @KafkaListener
+
+```java
+@Bean
+public ConcurrentKafkaListenerContainerFactory<Integer, String> kafkaListenerContainerFactory(ConsumerFactory<Integer, String> consumerFactory) {
+    ConcurrentKafkaListenerContainerFactory<Integer, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
+    factory.setConsumerFactory(consumerFactory);
+    factory.setCommonErrorHandler(errorHandler());
+    return factory;
+}
+```
 
 ### Producer Application
 
