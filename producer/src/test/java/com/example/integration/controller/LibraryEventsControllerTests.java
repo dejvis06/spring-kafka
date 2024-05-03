@@ -76,7 +76,6 @@ public class LibraryEventsControllerTests {
         assertEquals(HttpStatus.CREATED, responseEntity.getStatusCode());
 
         ConsumerRecord<Integer, String> consumerRecord = KafkaTestUtils.getSingleRecord(consumer, "library-events");
-
         assertEquals(1, consumerRecord.key());
 
         String value = new ObjectMapper().writeValueAsString(libraryEvent);

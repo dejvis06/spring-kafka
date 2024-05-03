@@ -1,23 +1,24 @@
 package com.example.producer.callback;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.support.SendResult;
-import org.springframework.util.concurrent.ListenableFutureCallback;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
+import org.springframework.kafka.support.ProducerListener;
 
 @Slf4j
-public class LibraryEventCallBack implements ListenableFutureCallback<SendResult<Integer, String>> {
+public class LibraryEventCallBack implements ProducerListener<Integer, String> {
+
     @Override
-    public void onFailure(Throwable ex) {
-        log.error("Failed, error: {} ", ex.getMessage());
+    public void onSuccess(ProducerRecord<Integer, String> producerRecord, RecordMetadata recordMetadata) {
+        int key = producerRecord.key();
+        String value = producerRecord.value();
+        int partition = recordMetadata.partition();
+
+        log.info("Message sent successfully for key: {}, value: {} and partition: {}", key, value, partition);
     }
 
     @Override
-    public void onSuccess(SendResult<Integer, String> result) {
-
-        int key = result.getProducerRecord().key();
-        String value = result.getProducerRecord().value();
-        int partition = result.getRecordMetadata().partition();
-
-        log.info("Message sent successfully for key: {}, value: {} and partition: {}", key, value, partition);
+    public void onError(ProducerRecord<Integer, String> producerRecord, RecordMetadata recordMetadata, Exception exception) {
+        log.error("Failed message with key: {} and value: {}, error: {} ", producerRecord.key(), producerRecord.value(), exception.getMessage());
     }
 }

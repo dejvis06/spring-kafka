@@ -4,23 +4,30 @@ import com.example.controller.LibraryEventsController;
 import com.example.domain.Book;
 import com.example.domain.LibraryEvent;
 import com.example.producer.Producer;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.messaging.support.GenericMessage;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.concurrent.CompletableFuture;
+
+import org.mockito.Mockito;
+import org.springframework.kafka.support.SendResult;
+import org.springframework.messaging.MessageHeaders;
+
 
 @WebMvcTest(LibraryEventsController.class)
 @AutoConfigureMockMvc
@@ -29,7 +36,7 @@ public class LibraryEventControllerTests {
     @Autowired
     MockMvc mockMvc;
     @MockBean
-    Producer producer;
+    Producer<Integer, String, LibraryEvent> producer;
 
     @Test
     void testPost() throws Exception {
@@ -43,12 +50,23 @@ public class LibraryEventControllerTests {
                 .book(book)
                 .build();
 
-        doNothing().when(producer).produce(libraryEvent);
+        CompletableFuture<SendResult<Integer, String>> future = mockFuture();
+
+        when(producer.produce(any())).thenReturn(future);
 
         String json = new ObjectMapper().writeValueAsString(libraryEvent);
         mockMvc.perform(post("/v1/libraryevent")
                         .content(json)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated());
+    }
+
+    private CompletableFuture<SendResult<Integer, String>> mockFuture() {
+        ProducerRecord<Integer, String> producerRecord = new ProducerRecord<>("topicName", 1, "Your message here");
+        RecordMetadata recordMetadata = new RecordMetadata(
+                new org.apache.kafka.common.TopicPartition("topicName", 1), 0, 0, System.currentTimeMillis(), Long.valueOf(-1), 1, 1);
+        SendResult<Integer, String> mockSendResult = new SendResult<>(producerRecord, recordMetadata);
+        CompletableFuture<SendResult<Integer, String>> future = CompletableFuture.completedFuture(mockSendResult);
+        return future;
     }
 }

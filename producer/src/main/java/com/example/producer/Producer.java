@@ -1,6 +1,9 @@
 package com.example.producer;
 
-public interface Producer<T> {
+import org.springframework.kafka.support.SendResult;
 
-    void produce(T t) throws Exception;
+import java.util.concurrent.CompletableFuture;
+
+public interface Producer<K, V, T> {
+    CompletableFuture<SendResult<K, V>> produce(T t) throws Exception;
 }
