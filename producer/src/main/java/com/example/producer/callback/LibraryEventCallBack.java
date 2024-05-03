@@ -10,11 +10,10 @@ public class LibraryEventCallBack implements ProducerListener<Integer, String> {
 
     @Override
     public void onSuccess(ProducerRecord<Integer, String> producerRecord, RecordMetadata recordMetadata) {
-        int key = producerRecord.key();
         String value = producerRecord.value();
         int partition = recordMetadata.partition();
 
-        log.info("Message sent successfully for key: {}, value: {} and partition: {}", key, value, partition);
+        log.info("Message sent successfully for value: {} and partition: {}", value, partition);
     }
 
     @Override

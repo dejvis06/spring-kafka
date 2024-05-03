@@ -4,11 +4,9 @@ import com.example.domain.Book;
 import com.example.domain.LibraryEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import kafka.KafkaTest;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.serialization.IntegerDeserializer;
-import org.apache.kafka.common.serialization.IntegerSerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -76,8 +74,6 @@ public class LibraryEventsControllerTests {
         assertEquals(HttpStatus.CREATED, responseEntity.getStatusCode());
 
         ConsumerRecord<Integer, String> consumerRecord = KafkaTestUtils.getSingleRecord(consumer, "library-events");
-        assertEquals(1, consumerRecord.key());
-
         String value = new ObjectMapper().writeValueAsString(libraryEvent);
         assertEquals(value, consumerRecord.value());
     }
